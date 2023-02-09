@@ -1,0 +1,57 @@
+syntax = "proto3";
+
+enum Type {
+  SPORT = 0;
+  FASHION = 1;
+  POLITICS = 2;
+}
+
+message Article {
+  oneof article_type {
+        Type type = 1;
+  }
+  string author = 2;
+  string content = 3;
+  string date = 4;
+}
+
+message ArticleRequest {
+  oneof article_type {
+        Type type = 1;
+  }
+  string author = 2;
+  string date = 3;
+}
+
+message Address {
+  string ip = 1;
+  string port = 2;
+}
+
+message ServerList {
+  repeated Address servers = 1;
+}
+
+
+message ArticlesList {
+    repeated Article articles = 1;
+}
+
+message Status {
+	bool currentStatus = 1;
+}
+
+message Empty {
+}
+
+service RegistryServer {
+  rpc RegisterServer (Address) returns (Status) {}
+  rpc GetServerList (Empty) returns (ServerList) {}
+}
+
+service Server {
+  rpc JoinServer (Empty) returns (Status) {}
+  rpc LeaveServer (Empty) returns (Status) {}
+  rpc GetArticles (ArticleRequest) returns (ArticlesList) {}
+  rpc PublishArticle (Article) returns (Status) {}
+}
