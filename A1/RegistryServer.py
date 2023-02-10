@@ -2,6 +2,7 @@ import grpc
 from concurrent import futures
 import A1_pb2
 import A1_pb2_grpc
+from urllib.parse import urlparse
 
 MAXSERVERS = 5
 SERVERS = set()
@@ -20,6 +21,11 @@ class RegistryServerServicer(A1_pb2_grpc.RegistryServerServicer):
             return A1_pb2.Status(currentStatus = True)
 
     def GetServerList(self, request, context):
+        client_address = urlparse(context.peer()).path
+        idx = client_address.rfind(':')
+        ip = client_address[:idx]
+        port = client_address[idx+ 1:]
+        print(f'SERVER LIST REQUEST FROM {ip}:{port}')
         return A1_pb2.ServerList(servers=[A1_pb2.Address(ip=ip, port=port) for ip, port in SERVERS])
 
 
