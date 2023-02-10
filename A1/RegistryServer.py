@@ -8,7 +8,7 @@ SERVERS = set()
 
 class RegistryServerServicer(A1_pb2_grpc.RegistryServerServicer):
     def RegisterServer(self, request, context):
-        print("Register Request Received")
+        print(f'JOIN REQUEST FROM {request.ip}:{request.port}')
         
         if len(SERVERS) == MAXSERVERS:
             print("MAX CONNECTION LIMIT REACHED, REJECTING THE REQUEST FOR REGISTRATION")
