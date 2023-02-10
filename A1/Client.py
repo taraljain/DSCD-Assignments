@@ -1,8 +1,10 @@
 import grpc
 import A1_pb2
 import A1_pb2_grpc
+import uuid
 
 SERVERS = set()
+UUID = str(uuid.uuid1())
 
 def getServersAddress():
     while True:
@@ -24,13 +26,13 @@ def getActiveServersList():
 
         for idx, address in enumerate(serversList):
             print("{}. Name = {}, IP = {}, Port = {}".format(idx + 1, address.name, address.ip, address.port))
-            SERVERS.add((address.name, address.ip, address.port))
+            SERVERS.add((address.ip, address.port))
 
 def joinServer():
     ip, port = getServersAddress()
     with grpc.insecure_channel(f'{ip}:{port}') as channel:
         stub = A1_pb2_grpc.ServerStub(channel)
-        request = A1_pb2.Empty()
+        request = A1_pb2.ClientDetails(UUID=UUID)
         success = stub.JoinServer(request)
         return success.currentStatus
 
@@ -39,7 +41,7 @@ def leaveServer():
     ip, port = getServersAddress()
     with grpc.insecure_channel(f'{ip}:{port}') as channel:
         stub = A1_pb2_grpc.ServerStub(channel)
-        request = A1_pb2.Empty()
+        request = A1_pb2.ClientDetails(UUID=UUID)
         success = stub.LeaveServer(request)
         return success.currentStatus
 
@@ -64,7 +66,7 @@ def publishArticle():
 
     with grpc.insecure_channel(f'{ip}:{port}') as channel:
         stub = A1_pb2_grpc.ServerStub(channel)
-        request = A1_pb2.Article(type=type, author=author, content=context, date="")
+        request = A1_pb2.Article(user = A1_pb2.ClientDetails(UUID=UUID), type=type, author=author, content=context, date="")
         success = stub.PublishArticle(request)
         return success.currentStatus
 
@@ -72,7 +74,7 @@ def getArticles():
     ip, port = getServersAddress()
     with grpc.insecure_channel(f'{ip}:{port}') as channel:
         stub = A1_pb2_grpc.ServerStub(channel)
-        request = A1_pb2.ArticleRequest(type=A1_pb2.Type.SPORT, author="Taral Jain", date="01/01/2022")
+        request = A1_pb2.ArticleRequest(user = A1_pb2.ClientDetails(UUID=UUID), type=A1_pb2.Type.SPORT, author="Taral Jain", date="01/01/2022")
         articlesList = stub.GetArticles(request)
         return articlesList
 

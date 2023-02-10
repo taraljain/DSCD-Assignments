@@ -13,42 +13,39 @@ ARTICLES = []
 
 class ServerServicer(A1_pb2_grpc.ServerServicer):
     def JoinServer(self, request, context):
-        print("Joining Request Received")
+        CLIENT_UUID = request.UUID
+        print(f'JOIN REQUEST FROM {CLIENT_UUID}')
         
         if len(CLIENTELES) == MAXCLIENTS:
             print("MAX CONNECTION LIMIT REACHED, REJECTING THE REQUEST FOR JOINING")
             return A1_pb2.Status(currentStatus = False)
         
         else:
-            client_address = urlparse(context.peer()).path
-            ip = client_address[:client_address.rfind(':')]
-            
-            if ip in CLIENTELES:
+            if CLIENT_UUID in CLIENTELES:
                 return A1_pb2.Status(currentStatus = False)
             else:
-                CLIENTELES.add(ip)
-                print(CLIENTELES)
+                CLIENTELES.add(CLIENT_UUID)
                 return A1_pb2.Status(currentStatus = True)
     
     def LeaveServer(self, request, context):
-        client_address = urlparse(context.peer()).path
-        ip = client_address[:client_address.rfind(':')]
-        
-        if ip in CLIENTELES:
-            CLIENTELES.remove(ip)
+        CLIENT_UUID = request.UUID
+        print(f'LEAVE REQUEST FROM {CLIENT_UUID}')
+
+        if CLIENT_UUID in CLIENTELES:
+            CLIENTELES.remove(CLIENT_UUID)
             return A1_pb2.Status(currentStatus = True)
         
         else:
             return A1_pb2.Status(currentStatus = False)
 
     def GetArticles(self, request, context):
-        client_address = urlparse(context.peer()).path
-        ip = client_address[:client_address.rfind(':')]
+        CLIENT_UUID = request.user.UUID
+        print(f'ARTICLES REQUEST FROM {CLIENT_UUID}')
         date_format = "%d/%m/%Y"
         date_requested = datetime.strptime(request.date, date_format)
         toReturn = []
 
-        if ip in CLIENTELES:
+        if CLIENT_UUID in CLIENTELES:
             for article in ARTICLES:
                 date_article = datetime.strptime(article[3], "%d/%m/%Y")
                 diff = date_requested - date_article
@@ -58,10 +55,10 @@ class ServerServicer(A1_pb2_grpc.ServerServicer):
         return A1_pb2.ArticlesList(articles=toReturn)
 
     def PublishArticle(self, request, context):
-        client_address = urlparse(context.peer()).path
-        ip = client_address[:client_address.rfind(':')]
+        CLIENT_UUID = request.user.UUID
         
-        if ip in CLIENTELES:
+        if CLIENT_UUID in CLIENTELES:
+            print(f'ARTICLE PUBLISHED FROM {CLIENT_UUID}')
             ARTICLES.append((request.type, request.author, request.content, date.today().strftime("%d/%m/%Y")))
             return A1_pb2.Status(currentStatus = True)
         else:
