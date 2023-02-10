@@ -16,7 +16,7 @@ class RegistryServerServicer(A1_pb2_grpc.RegistryServerServicer):
             return A1_pb2.Status(currentStatus = False)
         
         else:
-            server = (request.ip, request.port)
+            server = (request.name, request.ip, request.port)
             SERVERS.add(server)
             return A1_pb2.Status(currentStatus = True)
 
@@ -26,7 +26,7 @@ class RegistryServerServicer(A1_pb2_grpc.RegistryServerServicer):
         ip = client_address[:idx]
         port = client_address[idx+ 1:]
         print(f'SERVER LIST REQUEST FROM {ip}:{port}')
-        return A1_pb2.ServerList(servers=[A1_pb2.Address(ip=ip, port=port) for ip, port in SERVERS])
+        return A1_pb2.ServerList(servers=[A1_pb2.ServerDetails(name=name, ip=ip, port=port) for name, ip, port in SERVERS])
 
 
 def serve(host, port):

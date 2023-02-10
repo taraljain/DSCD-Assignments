@@ -23,8 +23,8 @@ def getActiveServersList():
         print("Here is the list of active servers:")
 
         for idx, address in enumerate(serversList):
-            print("Server {}: IP = {}, Port = {}".format(idx + 1, address.ip, address.port))
-            SERVERS.add((address.ip, address.port))
+            print("{}. Name = {}, IP = {}, Port = {}".format(idx + 1, address.name, address.ip, address.port))
+            SERVERS.add((address.name, address.ip, address.port))
 
 def joinServer():
     ip, port = getServersAddress()

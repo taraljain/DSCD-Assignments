@@ -68,10 +68,10 @@ class ServerServicer(A1_pb2_grpc.ServerServicer):
             return A1_pb2.Status(currentStatus = False)
 
 
-def registerSelf(host, port):
+def registerSelf(name, host, port):
     with grpc.insecure_channel('localhost:6000') as channel:
         stub = A1_pb2_grpc.RegistryServerStub(channel)
-        request = A1_pb2.Address(ip=host, port=port)
+        request = A1_pb2.ServerDetails(name=name , ip=host, port=port)
         success = stub.RegisterServer(request)
         return success.currentStatus
         
@@ -84,9 +84,10 @@ def serve(host, port):
     server.wait_for_termination()
 
 if __name__ == "__main__":
+    name = "Server_1"
     host="localhost"
     port="5000"
-    if registerSelf(host, port):
+    if registerSelf(name, host, port):
         print('Server Registered')
         serve(host, port)
     else:
