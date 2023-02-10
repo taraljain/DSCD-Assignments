@@ -23,9 +23,10 @@ message ArticleRequest {
   string date = 3;
 }
 
-message Address {
-  string ip = 1;
-  string port = 2;
+message ServerDetails {
+  string name = 1;
+  string ip = 2;
+  string port = 3;
 }
 
 message ServerList {
@@ -45,7 +46,7 @@ message Empty {
 }
 
 service RegistryServer {
-  rpc RegisterServer (Address) returns (Status) {}
+  rpc RegisterServer (ServerDetails) returns (Status) {}
   rpc GetServerList (Empty) returns (ServerList) {}
 }
 
