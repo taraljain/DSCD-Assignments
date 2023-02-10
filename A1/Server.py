@@ -49,7 +49,7 @@ class ServerServicer(A1_pb2_grpc.ServerServicer):
             for article in ARTICLES:
                 date_article = datetime.strptime(article[3], "%d/%m/%Y")
                 diff = date_requested - date_article
-                if ((request.type == article[0] or request.type == "") and (request.author == article[1] or request.type == " ") and diff.days <= 0):
+                if ((request.type == article[0] or request.type == A1_pb2.Type.NONE) and (request.author == article[1] or request.author == "") and diff.days <= 0):
                     toReturn.append(A1_pb2.Article(type=article[0], author=article[1], content=article[2], date=article[3]))
             
         return A1_pb2.ArticlesList(articles=toReturn)

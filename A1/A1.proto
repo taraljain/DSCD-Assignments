@@ -4,6 +4,7 @@ enum Type {
   SPORT = 0;
   FASHION = 1;
   POLITICS = 2;
+  NONE = 4;
 }
 
 message Article {

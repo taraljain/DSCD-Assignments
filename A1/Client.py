@@ -72,9 +72,30 @@ def publishArticle():
 
 def getArticles():
     ip, port = getServersAddress()
+
+    idx = int(input("""
+    Enter the type of Article
+    [1] Sport
+    [2] Fashion
+    [3] Politics
+    [4] None\n"""))
+
+    if idx == 1:
+        type = A1_pb2.Type.SPORT
+    elif idx == 2:
+        type = A1_pb2.Type.FASHION
+    elif idx == 3:
+        type = A1_pb2.Type.POLITICS
+    else:
+        type = A1_pb2.Type.NONE
+
+    author = input("Enter the Author's Name\n")
+
+    date = input("Enter the date in DD/MM/YYYY format\n")
+
     with grpc.insecure_channel(f'{ip}:{port}') as channel:
         stub = A1_pb2_grpc.ServerStub(channel)
-        request = A1_pb2.ArticleRequest(user = A1_pb2.ClientDetails(UUID=UUID), type=A1_pb2.Type.SPORT, author="Taral Jain", date="01/01/2022")
+        request = A1_pb2.ArticleRequest(user = A1_pb2.ClientDetails(UUID=UUID), type=type, author=author, date=date)
         articlesList = stub.GetArticles(request)
         return articlesList
 
