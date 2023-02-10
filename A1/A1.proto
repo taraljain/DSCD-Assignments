@@ -30,7 +30,7 @@ message ServerDetails {
 }
 
 message ServerList {
-  repeated Address servers = 1;
+  repeated ServerDetails servers = 1;
 }
 
 
