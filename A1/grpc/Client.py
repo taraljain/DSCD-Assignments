@@ -64,6 +64,15 @@ def publishArticle():
     author = input("Enter the Author's Name\n")
     context = input("Enter the content in NOT more than 200 words\n")
 
+    while True:
+        word_count = len(context.split())
+
+        if word_count == 0 or word_count > 200:
+            print("Error: Your input contains 0 or more than 200 words.")
+            context = input("Enter the content in NOT more than 200 words\n")
+        else:
+            break
+
     with grpc.insecure_channel(f'{ip}:{port}') as channel:
         stub = A1_pb2_grpc.ServerStub(channel)
         request = A1_pb2.Article(user = A1_pb2.ClientDetails(UUID=UUID), type=type, author=author, content=context, date="")

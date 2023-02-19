@@ -40,6 +40,9 @@ message ServerList {
   repeated ServerDetails servers = 1;
 }
 
+message ClientList {
+  repeated ClientDetails clients = 1;
+}
 
 message ArticlesList {
     repeated Article articles = 1;
@@ -61,5 +64,6 @@ service Server {
   rpc JoinServer (ClientDetails) returns (Status) {}
   rpc LeaveServer (ClientDetails) returns (Status) {}
   rpc GetArticles (ArticleRequest) returns (ArticlesList) {}
+  rpc GetAllArticles (Empty) returns (ArticlesList) {}
   rpc PublishArticle (Article) returns (Status) {}
 }
