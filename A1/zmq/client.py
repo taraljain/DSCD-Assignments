@@ -321,7 +321,7 @@ if __name__ == "__main__":
                 except ValueError:
                     print("\nIllegal Format\n")
             
-        elif req == REQUEST.PublishArticle.value:
+        elif req == REQUEST.Exit.value:
             break
         else:
             print("\nInvalid Option\n")
