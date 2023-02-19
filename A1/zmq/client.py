@@ -221,6 +221,7 @@ if __name__ == "__main__":
         print("[3] Leave Server")
         print("[4] Get Articles")
         print("[5] Publish Article")
+        print("[6] Exit")
         req = int(input("Enter your choice: ")) + 1
         
         if req == REQUEST.GetServerList.value:
@@ -278,9 +279,10 @@ if __name__ == "__main__":
                 articleRequest = ArticleRequest(type, author, time)
                 articles = client.getArticles(s_no, articleRequest)
            
-                if articles != -1:
+                if articles != 0:
                     # successful to get the articles
-                    if len(articles) != 0:
+                    
+                    if len(articles) == 0:
                         print("\nNo articles found\n")
                     else: 
                         print("\nHere are the articles:")
@@ -319,5 +321,7 @@ if __name__ == "__main__":
                 except ValueError:
                     print("\nIllegal Format\n")
             
+        elif req == REQUEST.PublishArticle.value:
+            break
         else:
             print("\nInvalid Option\n")

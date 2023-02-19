@@ -10,6 +10,7 @@ class REQUEST(Enum):
     LeaveServer = 4
     GetArticles = 5
     PublishArticle = 6
+    Exit = 7
     
 
 class Node:
@@ -72,6 +73,6 @@ class ArticleRequest:
             return 0
         if len(self.author) != 0 and self.author != article.author:
              return 0
-        if len(self.time) != 0 and self.time > article.time:
+        if len(self.time) != 0 and self.time >= article.time:
              return 0
         return 1 
