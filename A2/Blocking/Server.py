@@ -41,58 +41,74 @@ class ServerServicer(A2_pb2_grpc.ServerServicer):
     def Write(self, request, context):
         # Forward the request to the primary server
         print("Write request received")
-        with grpc.insecure_channel(f'{primaryServer[0]}:{primaryServer[1]}') as channel:
-            stub = A2_pb2_grpc.ServerStub(channel)
-            response = stub.WritePrimary(request)
-            return response
+
+        if (request.UUID not in DataStore and not os.path.isfile(f'{port}/{request.name}.txt')) or (request.UUID in DataStore and os.path.isfile(f'{port}/{request.name}.txt')):
+            with grpc.insecure_channel(f'{primaryServer[0]}:{primaryServer[1]}') as channel:
+                stub = A2_pb2_grpc.ServerStub(channel)
+                response = stub.WritePrimary(request)
+                return response
+        elif request.UUID not in DataStore and os.path.isfile(f'{port}/{request.name}.txt'):
+            return A2_pb2.WriteResponse(status="FILE WITH THE SAME NAME ALREADY EXISTS", UUID="" ,version="")
+        elif request.UUID in DataStore and not os.path.isfile(f'{port}/{request.name}.txt'):
+            return A2_pb2.WriteResponse(status="DELETED FILE CANNOT BE UPDATED", UUID="" ,version="")
 
     def WritePrimary(self, request, context):
         print("Write request received by primary server")
-        current_time = str(datetime.datetime.now())
-        DataStore.update({request.UUID: (request.name, current_time)})
 
-        # Save request.content to the file system
-        saveFile("primary", f'{request.name}.txt', request.content)
+        if (request.UUID not in DataStore and not os.path.isfile(f'{port}/{request.name}.txt')) or (request.UUID in DataStore and os.path.isfile(f'{port}/{request.name}.txt')):
+            current_time = str(datetime.datetime.now())
+            DataStore.update({request.UUID: (request.name, current_time)})
 
-        # Create a queue to communicate with replica threads
-        q = queue.Queue()
+            # Save request.content to the file system
+            saveFile(port, f'{request.name}.txt', request.content)
 
-        def sendWriteRequestToServers(server):
-            with grpc.insecure_channel(f'{server[0]}:{server[1]}') as channel:
-                stub = A2_pb2_grpc.ServerStub(channel)
-                req = A2_pb2.WriteRequestServer(name=request.name, content=request.content, UUID=request.UUID, version=current_time)
-                response = stub.WriteServer(req)
-                
-                q.put(response)
+            # Create a queue to communicate with replica threads
+            q = queue.Queue()
 
-        threads = [threading.Thread(target=sendWriteRequestToServers, args=(server,)) for server in SERVERS]
-        for thread in threads:
-            thread.start()
+            def sendWriteRequestToServers(server):
+                with grpc.insecure_channel(f'{server[0]}:{server[1]}') as channel:
+                    stub = A2_pb2_grpc.ServerStub(channel)
+                    req = A2_pb2.WriteRequestServer(name=request.name, content=request.content, UUID=request.UUID, version=current_time)
+                    response = stub.WriteServer(req)
+                    
+                    q.put(response)
 
-        # Wait for all threads to finish and collect acknowledgements
-        responses = []
-        for thread in threads:
-            thread.join()
-            responses.append(q.get())
+            threads = [threading.Thread(target=sendWriteRequestToServers, args=(server,)) for server in SERVERS]
+            for thread in threads:
+                thread.start()
 
-        # Check if all replicas successfully wrote the data
-        success = all(response.status=="SUCCESS" for response in responses)
-        
-        if success:
-            return A2_pb2.WriteResponse(status="SUCCESS", UUID=request.UUID ,version=current_time)
-        else:
-            return A2_pb2.WriteResponse(status="FAIL", UUID="" ,version="")
+            # Wait for all threads to finish and collect acknowledgements
+            responses = []
+            for thread in threads:
+                thread.join()
+                responses.append(q.get())
+
+            # Check if all replicas successfully wrote the data
+            success = all(response.status=="SUCCESS" for response in responses)
+            
+            if success:
+                return A2_pb2.WriteResponse(status="SUCCESS", UUID=request.UUID ,version=current_time)
+            else:
+                return A2_pb2.WriteResponse(status="FAIL", UUID="" ,version="")
+        elif request.UUID not in DataStore and os.path.isfile(f'{port}/{request.name}.txt'):
+            return A2_pb2.WriteResponse(status="FILE WITH THE SAME NAME ALREADY EXISTS", UUID="" ,version="")
+        elif request.UUID not in DataStore and not os.path.isfile(f'{port}/{request.name}.txt'):
+            return A2_pb2.WriteResponse(status="DELETED FILE CANNOT BE UPDATED", UUID="" ,version="")
         
 
     def WriteServer(self, request, context):
         print("Write request received by replica server")
-        DataStore.update({request.UUID: (request.name, request.version)})
+        if (request.UUID not in DataStore and not os.path.isfile(f'{port}/{request.name}.txt')) or (request.UUID in DataStore and os.path.isfile(f'{port}/{request.name}.txt')):
+            DataStore.update({request.UUID: (request.name, request.version)})
 
-        # Save request.content to the file system
-        saveFile(port, f'{request.name}.txt', request.content)
+            # Save request.content to the file system
+            saveFile(port, f'{request.name}.txt', request.content)
 
-        return A2_pb2.Response(status="SUCCESS")
-
+            return A2_pb2.Response(status="SUCCESS")
+        elif request.UUID not in DataStore and os.path.isfile(f'{port}/{request.name}.txt'):
+            return A2_pb2.WriteResponse(status="FILE WITH THE SAME NAME ALREADY EXISTS", UUID="" ,version="")
+        elif request.UUID not in DataStore and not os.path.isfile(f'{port}/{request.name}.txt'):
+            return A2_pb2.WriteResponse(status="DELETED FILE CANNOT BE UPDATED", UUID="" ,version="")
 
         
 def saveFile(folder, fileName, content):
