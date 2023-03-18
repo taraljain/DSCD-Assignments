@@ -50,8 +50,13 @@ def read():
         request = A2_pb2.RDRequest(UUID=UUID)
         response = stub.Read(request)
 
-        if response.status.Success:
-            print("EVERYTHING") 
+        if response.status == "SUCCESS":
+            print(Fore.YELLOW + f'File Name: {response.name}' + Style.RESET_ALL)
+            print(Fore.YELLOW + f'File Content: {response.content}' + Style.RESET_ALL)
+            print(Fore.LIGHTBLACK_EX + f'Version: {response.version}' + Style.RESET_ALL)
+
+        else:
+            print(Fore.RED + response.status + Style.RESET_ALL)
 
 
 def write():
@@ -106,7 +111,7 @@ def run():
         if OPERATION == 1:
             getActiveServersList()
         elif OPERATION == 2:
-            print("To Do")
+            read()
         elif OPERATION == 3:
             write()
         elif OPERATION == 4:
