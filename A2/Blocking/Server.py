@@ -5,6 +5,7 @@ import random
 import datetime
 import queue
 import threading
+import os
 
 sys.path.insert(1, "../")
 
@@ -51,7 +52,7 @@ class ServerServicer(A2_pb2_grpc.ServerServicer):
         DataStore.update({request.UUID: (request.name, current_time)})
 
         # Save request.content to the file system
-        saveFile(f'{request.name}_primary.txt', request.content)
+        saveFile("primary", f'{request.name}.txt', request.content)
 
         # Create a queue to communicate with replica threads
         q = queue.Queue()
@@ -88,14 +89,17 @@ class ServerServicer(A2_pb2_grpc.ServerServicer):
         DataStore.update({request.UUID: (request.name, request.version)})
 
         # Save request.content to the file system
-        saveFile(f'{request.name}_{port}.txt', request.content)
+        saveFile(port, f'{request.name}.txt', request.content)
 
         return A2_pb2.Response(status="SUCCESS")
 
 
         
-def saveFile(fileName, content):
-    with open(f'{fileName}', "w") as file:
+def saveFile(folder, fileName, content):
+    if not os.path.exists(folder):
+        os.makedirs(folder)
+
+    with open(os.path.join(folder, fileName), 'w') as file:
         file.write(content)
 
 
