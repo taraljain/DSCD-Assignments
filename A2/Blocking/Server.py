@@ -27,6 +27,16 @@ class ServerServicer(A2_pb2_grpc.ServerServicer):
             SERVERS.add((request.ip, request.port))
 
         return A2_pb2.Empty()
+    
+    def Read(self, request, context):
+        if request.UUID not in DataStore:
+            return A2_pb2.ReadResponse(status="FILE DOES NOT EXIST", name="", content="", version="")
+        elif not os.path.isfile(f'{port}/{DataStore[request.UUID][0]}.txt'):
+            return A2_pb2.ReadResponse(status="FILE ALREADY DELETED", name="", content="", version="")
+        else:
+            with open(f'{port}/{DataStore[request.UUID][0]}.txt', 'r') as file:
+                content = file.read()
+            return A2_pb2.ReadResponse(status="SUCCESS", name=DataStore[request.UUID][0], content=content, version=DataStore[request.UUID][1])
 
     ''' 
         Steps:
