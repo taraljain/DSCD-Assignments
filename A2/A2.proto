@@ -1,0 +1,67 @@
+syntax = "proto3";
+
+message ServerDetails {
+  string ip = 1;
+  string port = 2;
+}
+
+message ClientDetails {
+  string UUID = 1;
+}
+
+message ServerList {
+  repeated ServerDetails servers = 1;
+}
+
+message ClientList {
+  repeated ClientDetails clients = 1;
+}
+
+message WriteRequest {
+  string name = 1;
+  string content = 2;
+  string UUID = 3;
+}
+
+message WriteRequestServer {
+  string name = 1;
+  string content = 2;
+  string UUID = 3;
+  string version = 4;
+}
+
+message WriteResponse {
+  string status = 1;
+  string UUID = 2;
+  string version = 3;
+}
+
+message RDRequest {
+  string UUID = 1;
+}
+
+message ReadResponse {
+  string status = 1;
+  string name = 2;
+  string content = 3;
+  string version = 4;
+}
+
+message Response {
+  string status = 1;
+}
+
+message Empty {
+}
+
+service RegistryServer {
+  rpc RegisterServer (ServerDetails) returns (ServerDetails) {}
+  rpc GetServerList (Empty) returns (ServerList) {}
+}
+
+service Server {
+  rpc SendJoiningInfo (ServerDetails) returns (Empty) {}
+  rpc Write (WriteRequest) returns (WriteResponse) {}
+  rpc WritePrimary(WriteRequest) returns (WriteResponse) {}
+  rpc WriteServer(WriteRequestServer) returns (Response) {}
+}
