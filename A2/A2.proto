@@ -47,6 +47,11 @@ message ReadResponse {
   string version = 4;
 }
 
+message DeleteRequestServer {
+  string UUID = 1;
+  string version = 2;
+}
+
 message Response {
   string status = 1;
 }
@@ -64,4 +69,8 @@ service Server {
   rpc Write (WriteRequest) returns (WriteResponse) {}
   rpc WritePrimary(WriteRequest) returns (WriteResponse) {}
   rpc WriteServer(WriteRequestServer) returns (Response) {}
+  rpc Read (RDRequest) returns (ReadResponse) {}
+  rpc Delete (RDRequest) returns (Response) {}
+  rpc DeletePrimary (RDRequest) returns (Response) {}
+  rpc DeleteServer (DeleteRequestServer) returns (Response) {}
 }
