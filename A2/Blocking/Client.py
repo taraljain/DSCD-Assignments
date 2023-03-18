@@ -95,8 +95,8 @@ def delete():
         request = A2_pb2.RDRequest(UUID=UUID)
         response = stub.Delete(request)
 
-        if response.status.Success:
-            print("EVERYTHING") 
+        print(response.status)
+
 
 def run():
     while True:
@@ -115,7 +115,7 @@ def run():
         elif OPERATION == 3:
             write()
         elif OPERATION == 4:
-            print("To Do")
+            delete()
         else:
             print("Signing off, Thank You..!!")
             return

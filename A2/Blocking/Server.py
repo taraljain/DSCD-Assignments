@@ -119,14 +119,90 @@ class ServerServicer(A2_pb2_grpc.ServerServicer):
             return A2_pb2.WriteResponse(status="FILE WITH THE SAME NAME ALREADY EXISTS", UUID="" ,version="")
         elif request.UUID not in DataStore and not os.path.isfile(f'{port}/{request.name}.txt'):
             return A2_pb2.WriteResponse(status="DELETED FILE CANNOT BE UPDATED", UUID="" ,version="")
-
         
+        
+    def Delete(self, request, context):
+        print("Delete request received")
+        
+        if request.UUID not in DataStore:
+            return A2_pb2.Response(status="FILE DOES NOT EXIST")
+        elif not os.path.isfile(f'{port}/{DataStore[request.UUID][0]}.txt'):
+            return A2_pb2.Response(status="FILE ALREADY DELETED")   
+        else:
+            # Forward the request to the primary server
+            with grpc.insecure_channel(f'{primaryServer[0]}:{primaryServer[1]}') as channel:
+                stub = A2_pb2_grpc.ServerStub(channel)
+                response = stub.DeletePrimary(request)
+                return response
+            
+            
+    def DeletePrimary(self, request, context):
+        print("Delete request received by primary server")
+
+        if request.UUID not in DataStore:
+            return A2_pb2.Response(status="FILE DOES NOT EXIST")
+        elif not os.path.isfile(f'{port}/{DataStore[request.UUID][0]}.txt'):
+            return A2_pb2.Response(status="FILE ALREADY DELETED")
+        else:
+            # Delete the file from the file system
+            deleteFile(port, f'{DataStore[request.UUID][0]}.txt')
+
+            current_time = str(datetime.datetime.now())
+            # Update the DataStore
+            DataStore.update({request.UUID: ("", current_time)})
+
+            # Create a queue to communicate with replica threads
+            q = queue.Queue()
+
+            def sendDeleteRequestToServers(server):
+                with grpc.insecure_channel(f'{server[0]}:{server[1]}') as channel:
+                    stub = A2_pb2_grpc.ServerStub(channel)
+                    req = A2_pb2.DeleteRequestServer(UUID=request.UUID, version=current_time)
+                    response = stub.DeleteServer(req)
+                    
+                    q.put(response)
+
+            threads = [threading.Thread(target=sendDeleteRequestToServers, args=(server,)) for server in SERVERS]
+            for thread in threads:
+                thread.start()
+
+            # Wait for all threads to finish and collect acknowledgements
+            responses = []
+            for thread in threads:
+                thread.join()
+                responses.append(q.get())
+
+            # Check if all replicas successfully wrote the data
+            success = all(response.status=="SUCCESS" for response in responses)
+            
+            if success:
+                return A2_pb2.Response(status="SUCCESS")
+            else:
+                return A2_pb2.Response(status="FAIL")
+            
+            
+    def DeleteServer(self, request, context):
+        if request.UUID not in DataStore:
+            return A2_pb2.Response(status="FILE DOES NOT EXIST")
+        elif not os.path.isfile(f'{port}/{DataStore[request.UUID][0]}.txt'):
+            return A2_pb2.Response(status="FILE ALREADY DELETED")
+        else:
+            # Delete the file from the file system
+            deleteFile(port, f'{DataStore[request.UUID][0]}.txt')
+            # Update the DataStore
+            DataStore.update({request.UUID: ("", request.version)})
+            return A2_pb2.Response(status="SUCCESS")
+
+
 def saveFile(folder, fileName, content):
     if not os.path.exists(folder):
         os.makedirs(folder)
 
     with open(os.path.join(folder, fileName), 'w') as file:
         file.write(content)
+
+def deleteFile(folder, fileName):
+    os.remove(os.path.join(folder, fileName))
 
 
 def registerSelf(ip, port):
