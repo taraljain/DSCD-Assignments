@@ -2,6 +2,7 @@ import grpc
 import uuid
 import sys
 import random
+from colorama import Fore, Style
 
 sys.path.insert(1, "../")
 import A2_pb2
@@ -73,10 +74,10 @@ def write():
         response = stub.Write(request)
 
         if response.status == "SUCCESS":
-            print("File written successfully!")
+            print(Fore.GREEN + response.status + Style.RESET_ALL)
             FILES.append([response.UUID, response.version])
         else:
-            print("File writing failed!")
+            print(Fore.RED + response.status + Style.RESET_ALL)
     
 
 def delete():
@@ -93,9 +94,26 @@ def delete():
             print("EVERYTHING") 
 
 def run():
-    # Fill in the active server's list
-    getActiveServersList()
-    write()
+    while True:
+        OPERATION = int(input("""
+    What you want to do?
+    1. Get active servers list
+    2. Read
+    3. Write
+    4. Delete
+    [Press Any Other Number Stop Client]\n
+    """))
+        if OPERATION == 1:
+            getActiveServersList()
+        elif OPERATION == 2:
+            print("To Do")
+        elif OPERATION == 3:
+            write()
+        elif OPERATION == 4:
+            print("To Do")
+        else:
+            print("Signing off, Thank You..!!")
+            return
 
 
 if __name__ == "__main__":
