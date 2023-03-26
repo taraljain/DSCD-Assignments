@@ -8,7 +8,7 @@ import datetime
 import queue
 import threading
 import os
-MAXCLIENTS = 1
+MAXCLIENTS = 10
 DataStore = {}
 SERVERS = set()
 global primaryServer
@@ -137,7 +137,7 @@ class ServerServicer(A2_pb2_grpc.ServerServicer):
 
             delete_response=deletePrimaryHelper(fileName,request_uuid)
 
-            t=threading.Thread(target=deleteBackupReplicas,args=(request_uuid))
+            t=threading.Thread(target=deleteBackupReplicas,args=(request_uuid,))
 
             t.start()
 
@@ -161,7 +161,7 @@ class ServerServicer(A2_pb2_grpc.ServerServicer):
 def WritePrimaryHelper(request_UUID,request_name,request_content):
         try:
             current_time = str(datetime.datetime.now())
-            DataStore.update({request_UUID:{request_name,current_time}})
+            DataStore.update({request_UUID:(request_name,current_time)})
 
             saveFile(port,f'{request_name}.txt',request_content)
 
@@ -199,7 +199,7 @@ def WriteBackupRelicas(request_UUID,request_name,request_content):
         success = all(response.status=="SUCCESS" for response in responses)
 
         # testing this function by adding sleep
-        time.sleep(20)
+        #time.sleep(20)
         
 
         if success:
