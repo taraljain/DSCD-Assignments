@@ -1,8 +1,6 @@
 import grpc
 from concurrent import futures
 from urllib.parse import urlparse
-import sys
-
 
 import A2_pb2
 import A2_pb2_grpc
@@ -32,7 +30,8 @@ class RegistryServerServicer(A2_pb2_grpc.RegistryServerServicer):
                 stub = A2_pb2_grpc.ServerStub(channel)
                 request = A2_pb2.ServerDetails(ip=server[0], port=server[1])
                 stub.SendJoiningInfo(request)
-            
+                
+                
             # Return the primary server's details
             return A2_pb2.ServerDetails(ip = primaryServer[0], port = primaryServer[1])
 
@@ -49,8 +48,8 @@ def serve(host, port):
     registryServer = grpc.server(futures.ThreadPoolExecutor(max_workers=MAXSERVERS))
     A2_pb2_grpc.add_RegistryServerServicer_to_server(RegistryServerServicer(), registryServer)
     registryServer.add_insecure_port(f"{host}:{port}")
-    registryServer.start();
+    registryServer.start()
     registryServer.wait_for_termination()
 
 if __name__ == "__main__":
-    serve(host="localhost", port=6000)
+    serve(host="127.0.0.1", port=6000)
