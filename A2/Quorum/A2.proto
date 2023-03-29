@@ -1,0 +1,64 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+
+message Empty {
+}
+
+message DeleteRequest {
+  string uuid= 1;
+}
+
+message DeleteResponse {
+  string status = 1;
+}
+
+message ReadRequest {
+  string uuid= 1;
+}
+
+message ReadResponse {
+  string status = 1;
+  string name = 2;
+  string content = 3;
+  google.protobuf.Timestamp version = 4;
+}
+
+message ReplicaInfo {
+  string ip = 1;
+  string port = 2;
+}
+
+message ReplicasList {
+   repeated ReplicaInfo replicas = 1;
+}
+
+message Response {
+  string status = 1;
+}
+
+message WriteRequest {
+  string name = 1;
+	string content = 2;
+  string uuid = 3;
+}
+
+message WriteResponse {
+  string status = 1;
+  string uuid = 2;
+  google.protobuf.Timestamp version = 3;
+}
+
+service RegisterServer {
+  rpc GetReadQuorumReplicas (Empty) returns (ReplicasList) {}
+  rpc GetReplicas (Empty) returns (ReplicasList) {}
+  rpc GetWriteQuorumReplicas (Empty) returns (ReplicasList) {}
+  rpc RegisterReplica (ReplicaInfo) returns (Response) {}
+}
+
+service Replica {
+  rpc ShareInfo(ReplicaInfo) returns (Response) {}
+  rpc Read (ReadRequest) returns (ReadResponse) {}
+  rpc Write (WriteRequest) returns (WriteResponse) {}
+  rpc Delete (DeleteRequest) returns (DeleteResponse) {}
+}
