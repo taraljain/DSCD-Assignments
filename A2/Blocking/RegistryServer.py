@@ -51,7 +51,10 @@ def serve(host, port):
     A2_pb2_grpc.add_RegistryServerServicer_to_server(RegistryServerServicer(), registryServer)
     registryServer.add_insecure_port(f"{host}:{port}")
     registryServer.start();
+    print("Registry Server started at {}:{}".format(host, port))
     registryServer.wait_for_termination()
 
 if __name__ == "__main__":
-    serve(host="localhost", port=6000)
+    host = sys.argv[1]
+    port = sys.argv[2]
+    serve(host, port)

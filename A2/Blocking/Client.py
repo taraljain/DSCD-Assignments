@@ -98,6 +98,78 @@ def delete():
         print(response.status)
 
 
+def automation():
+    getActiveServersList()
+
+    # Write 1 file
+    UUID = generateUUID()
+    name = "test_1"
+    content = "Hello World!"
+
+    serverIP, serverPort = chooseRandomServer()
+
+    with grpc.insecure_channel(f'{serverIP}:{serverPort}') as channel:
+        stub = A2_pb2_grpc.ServerStub(channel)
+        request = A2_pb2.WriteRequest(name=name, content=content, UUID=UUID)
+        response = stub.Write(request)
+
+        if response.status == "SUCCESS":
+            print(Fore.GREEN + response.status + Style.RESET_ALL)
+            FILES.append([response.UUID, response.version])
+        else:
+            print(Fore.RED + response.status + Style.RESET_ALL)
+    
+    print()
+
+    # Client then reads from all the replicas one by one
+    for serverIP, serverPort in SERVERS:
+        with grpc.insecure_channel(f'{serverIP}:{serverPort}') as channel:
+            stub = A2_pb2_grpc.ServerStub(channel)
+            request = A2_pb2.RDRequest(UUID=UUID)
+            response = stub.Read(request)
+
+            print("Response from server: {}:{}".format(serverIP, serverPort))
+            if response.status == "SUCCESS":
+                print(Fore.YELLOW + f'File Name: {response.name}' + Style.RESET_ALL)
+                print(Fore.YELLOW + f'File Content: {response.content}' + Style.RESET_ALL)
+                print(Fore.LIGHTBLACK_EX + f'Version: {response.version}' + Style.RESET_ALL)
+
+            else:
+                print(Fore.RED + response.status + Style.RESET_ALL)
+    
+            print()
+    
+    # Client then delete the file
+    serverIP, serverPort = chooseRandomServer()
+
+    with grpc.insecure_channel(f'{serverIP}:{serverPort}') as channel:
+        stub = A2_pb2_grpc.ServerStub(channel)
+        request = A2_pb2.RDRequest(UUID=UUID)
+        response = stub.Delete(request)
+
+        print(response.status)
+
+    print()
+    
+    # Client then reads the deleted file from all the replicas one by one
+    for serverIP, serverPort in SERVERS:
+        with grpc.insecure_channel(f'{serverIP}:{serverPort}') as channel:
+            stub = A2_pb2_grpc.ServerStub(channel)
+            request = A2_pb2.RDRequest(UUID=UUID)
+            response = stub.Read(request)
+
+            print("Response from server: {}:{}".format(serverIP, serverPort))
+            if response.status == "SUCCESS":
+                print(Fore.YELLOW + f'File Name: {response.name}' + Style.RESET_ALL)
+                print(Fore.YELLOW + f'File Content: {response.content}' + Style.RESET_ALL)
+                print(Fore.LIGHTBLACK_EX + f'Version: {response.version}' + Style.RESET_ALL)
+
+            else:
+                print(Fore.RED + response.status + Style.RESET_ALL)
+
+            print()
+
+
 def run():
     while True:
         OPERATION = int(input("""
