@@ -9,7 +9,7 @@ import A2_pb2
 import A2_pb2_grpc
 
 SERVERS = set()
-FILES = []
+FILES = {}
 
 def getActiveServersList():
     with grpc.insecure_channel('localhost:6000') as channel:
@@ -28,11 +28,13 @@ def generateUUID():
 
 
 def getUUID():
-    for index, file in enumerate(FILES):
-        print(index, file[0], file[1])
+    temp = []
+    for index, (UUID, version) in enumerate(FILES.items()):
+        temp.append([UUID, version])
+        print(index, UUID, version)
 
     idx = int(input("Select the UUID of the file you want to update: "))
-    return FILES[idx][0]
+    return temp[idx][0]
 
 
 def chooseRandomServer():
@@ -80,7 +82,7 @@ def write():
 
         if response.status == "SUCCESS":
             print(Fore.GREEN + response.status + Style.RESET_ALL)
-            FILES.append([response.UUID, response.version])
+            FILES.update({response.UUID: response.version})
         else:
             print(Fore.RED + response.status + Style.RESET_ALL)
     
@@ -115,7 +117,7 @@ def automation():
 
         if response.status == "SUCCESS":
             print(Fore.GREEN + response.status + Style.RESET_ALL)
-            FILES.append([response.UUID, response.version])
+            FILES.update({response.UUID, response.version})
         else:
             print(Fore.RED + response.status + Style.RESET_ALL)
     
