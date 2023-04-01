@@ -1,0 +1,23 @@
+WRITE
+1
+hello_world.txt
+Hey, welcome to my world!
+READ
+1
+WRITE
+2
+1
+Hey, welcome to my updated world!
+READ
+1
+WRITE
+1
+bye_world.txt
+Bye, going to bed!
+READ
+2
+DELETE
+1
+READ
+1
+END

@@ -1,5 +1,6 @@
 from datetime import datetime
 from enum import Enum
+from time import sleep
 from uuid import uuid1
 
 import grpc
@@ -12,8 +13,7 @@ import A2_pb2_grpc
 (1) menu input must be an integer
 (2) filename can not be empty
 (3) Either writing to all the N_w servers will succeed, or all will fail together
-'''
-        
+'''     
         
 class REQUEST(Enum):
     '''
@@ -152,6 +152,73 @@ class Client:
                                 
         # read failure from all the replicas (N_r) 
         # or the file has already been deleted
+        if isDeleted:
+            print(f"File has been deleted ({version})")
+        if version == "" or isDeleted:
+            return 0
+        
+        print(f"{name} ({version})")
+        print(content)                     
+        return 1
+    
+    def read_all(self):
+        '''
+        picks out a UUID, send the read request to all the replicas,
+        prints the file contents with the latest timestamp,
+        returns 0/1 (FAILURE/SUCCESS)
+        '''
+        # requesting the registry server for the replicas
+        read_quorum = self.get_replicas()
+        
+        # uuid options
+        uuid = ""
+        while True:
+            if len(self.files) == 0:
+                print("\nNo files available to read\n")
+                return 0
+            else:
+                print("Here are the existing files:")
+                for idx, file in enumerate(self.files):
+                    print(f"{idx+1}. {file['uuid']}:{file['name']}:{file['version']}")
+                file_index = int(input("Enter your choice: ")) - 1
+                        
+                if file_index >= 0 and file_index < len(self.files):
+                    uuid = self.files[file_index]['uuid']
+                    break
+                else:
+                    print("\nInvalid Option\n")
+        
+        # sending a read request to all the replicas (N_r)
+        version = ""
+        name = ""
+        content = ""
+        isDeleted = False
+        for _, replica in enumerate(read_quorum):
+            replica_addr = f"{replica.ip}:{replica.port}"
+            print(f"READ REQUEST SENT TO {replica.ip}:{replica.port}")
+            with grpc.insecure_channel(replica_addr) as channel:
+                stub = A2_pb2_grpc.ReplicaStub(channel)
+                read_request = A2_pb2.ReadRequest(uuid=uuid)  
+                response = stub.Read(read_request)
+                
+                print(f"Status: {response.status}")
+                print(f"Name: {response.name}")
+                print(f"Version: {response.version}")
+                print()
+                    
+                if response.status == "SUCCESS" or response.status == "FILE ALREADY DELETED":
+                    # picking out the file with the latest version
+                    if version == "" or \
+                        datetime.strptime(version, "%d/%m/%y %H:%M:%S") < datetime.strptime(response.version, "%d/%m/%y %H:%M:%S"):
+                        version = response.version
+                        name = response.name
+                        content = response.content
+                        isDeleted = (response.status == "FILE ALREADY DELETED")
+                                
+        # read failure from all the replicas (N_r) 
+        # or the file has already been deleted
+        if isDeleted:
+            print(f"File has been deleted ({version})")
         if version == "" or isDeleted:
             return 0
         
@@ -240,7 +307,34 @@ class Client:
             self.files[file_index] = {"uuid": uuid, "name": name, "version": latest_version}
         return 1
 
+  
+def run_test_cases(sleep_timer):
+    '''
+    automated test cases
+    '''  
+    # running a client
+    client = Client()
+    print(f"\nClient is running\n")
     
+    # performing write-read ops
+    while True:
+        op = input()
+        if op == "WRITE":
+            # performing write operation
+            client.write()
+            print(f"\nWrite operation completed!\n")
+        elif op == "READ":
+            # performing read operation on each replica
+            client.read_all()
+            print(f"\nRead operation completed!\n")
+        elif op == "DELETE":
+            client.delete()
+        else:
+            break
+        sleep(sleep_timer)
+    return 1
+    
+  
 if __name__ == "__main__":
     # creates an instance for the client
     client = Client()
