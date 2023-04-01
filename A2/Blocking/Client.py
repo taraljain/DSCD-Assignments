@@ -28,6 +28,10 @@ def generateUUID():
 
 
 def getUUID():
+    if len(FILES) == 0:
+        print("No files found. Please write something first.")
+        return ""
+
     temp = []
     for index, (UUID, version) in enumerate(FILES.items()):
         temp.append([UUID, version])
@@ -39,6 +43,10 @@ def getUUID():
 
 def chooseRandomServer():
     # Randomly select a server from the list of active servers
+    if len(SERVERS) == 0:
+        print("No active servers found. Refreshing the list.")
+        getActiveServersList()
+
     return random.choice(list(SERVERS))
 
 
