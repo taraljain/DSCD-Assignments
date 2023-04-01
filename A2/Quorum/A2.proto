@@ -1,7 +1,5 @@
 syntax = "proto3";
 
-import "google/protobuf/timestamp.proto";
-
 message Empty {
 }
 
@@ -21,7 +19,7 @@ message ReadResponse {
   string status = 1;
   string name = 2;
   string content = 3;
-  google.protobuf.Timestamp version = 4;
+  string version = 4;
 }
 
 message ReplicaInfo {
@@ -46,10 +44,10 @@ message WriteRequest {
 message WriteResponse {
   string status = 1;
   string uuid = 2;
-  google.protobuf.Timestamp version = 3;
+  string version = 3;
 }
 
-service RegisterServer {
+service RegistryServer {
   rpc GetReadQuorumReplicas (Empty) returns (ReplicasList) {}
   rpc GetReplicas (Empty) returns (ReplicasList) {}
   rpc GetWriteQuorumReplicas (Empty) returns (ReplicasList) {}
@@ -57,7 +55,6 @@ service RegisterServer {
 }
 
 service Replica {
-  rpc ShareInfo(ReplicaInfo) returns (Response) {}
   rpc Read (ReadRequest) returns (ReadResponse) {}
   rpc Write (WriteRequest) returns (WriteResponse) {}
   rpc Delete (DeleteRequest) returns (DeleteResponse) {}
