@@ -1,7 +1,7 @@
 import grpc
 from concurrent import futures
 from urllib.parse import urlparse
-
+import sys
 import A2_pb2
 import A2_pb2_grpc
 
@@ -52,4 +52,6 @@ def serve(host, port):
     registryServer.wait_for_termination()
 
 if __name__ == "__main__":
-    serve(host="127.0.0.1", port=6000)
+    host = sys.argv[1]
+    port = sys.argv[2]
+    serve(host, port)

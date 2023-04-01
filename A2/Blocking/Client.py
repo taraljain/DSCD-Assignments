@@ -3,7 +3,6 @@ import uuid
 import sys
 import random
 from colorama import Fore, Style
-
 import A2_pb2
 import A2_pb2_grpc
 
