@@ -7,7 +7,6 @@ import queue
 import threading
 import os
 
-sys.path.insert(1, "../")
 
 import A2_pb2
 import A2_pb2_grpc

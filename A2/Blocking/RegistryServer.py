@@ -3,8 +3,6 @@ from concurrent import futures
 from urllib.parse import urlparse
 import sys
 
-sys.path.insert(1, "../")
-
 import A2_pb2
 import A2_pb2_grpc
 
