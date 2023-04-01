@@ -3,7 +3,6 @@ import uuid
 import sys
 import random
 from colorama import Fore, Style
-
 import A2_pb2
 import A2_pb2_grpc
 
@@ -124,7 +123,7 @@ def automation():
 
         if response.status == "SUCCESS":
             print(Fore.GREEN + response.status + Style.RESET_ALL)
-            FILES.update({response.UUID, response.version})
+            FILES.update({response.UUID: response.version})
         else:
             print(Fore.RED + response.status + Style.RESET_ALL)
     

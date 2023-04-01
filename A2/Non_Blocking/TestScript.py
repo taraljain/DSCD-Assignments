@@ -1,5 +1,5 @@
 import subprocess
-import Client
+import client
 import time
 
 
@@ -8,17 +8,17 @@ def simulate():
     registryServerPort = "6000"
     
     # create registry server
-    subprocess.Popen(['gnome-terminal', '--', 'python', 'RegistryServer.py', IP, registryServerPort])
+    subprocess.Popen(['gnome-terminal', '--', 'python', 'registry_server.py', IP, registryServerPort])
 
     # create replica servers
     N = int(input("Enter the number of replicas: "))
     for i in range(N):
-        subprocess.Popen(['gnome-terminal', '--', 'python', 'Server.py'])
+        subprocess.Popen(['gnome-terminal', '--', 'python', 'server.py'])
         
     time.sleep(5)
 
     # create client
-    Client.automation()
+    client.automation()
 
 if __name__ == '__main__':
     simulate()
