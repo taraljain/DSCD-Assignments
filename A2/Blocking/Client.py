@@ -124,7 +124,7 @@ def automation():
 
         if response.status == "SUCCESS":
             print(Fore.GREEN + response.status + Style.RESET_ALL)
-            FILES.update({response.UUID, response.version})
+            FILES.update({response.UUID: response.version})
         else:
             print(Fore.RED + response.status + Style.RESET_ALL)
     
